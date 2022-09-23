@@ -4,6 +4,7 @@ import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.input.KeyStroke;
 import com.googlecode.lanterna.input.KeyType;
 import com.googlecode.lanterna.terminal.Terminal;
+
 import java.io.IOException;
 
 public class Game {
@@ -11,6 +12,7 @@ public class Game {
     // player X and Y position
     private int xPos = 0;
     private int yPos = 0;
+
 
     // 2D array to contain the level data
     private int[][] levelGrid;
@@ -53,7 +55,7 @@ public class Game {
                 break;
 
             // For any other key, run the update logic
-            Update(key);
+            update(key);
         }
     }
 
@@ -102,33 +104,80 @@ public class Game {
         terminal.setCursorPosition(xPos,yPos);
         terminal.putString("\uD83D\uDC68");
         terminal.flush();
+
     }
 
-    private void Update(KeyStroke key) throws IOException {
+    private void update(KeyStroke key) throws IOException {
         // First clear the current position of the player on the screen
-        terminal.setCursorPosition(xPos,yPos);
+        terminal.setCursorPosition(xPos, yPos);
         terminal.putString(" ");
 
-        // Allow the player to move using the arrow keys
-        switch(key.getKeyType())
-        {
-            case ArrowUp:
-                if (levelGrid[xPos][yPos - 1] != 1)
-                yPos--;
-                break;
+        if (key.getKeyType() != KeyType.Character) {
+            // Allow the player to move using the arrow keys
+            switch (key.getKeyType()) {
 
-            case ArrowRight:
-                xPos++;
-                break;
+                case ArrowUp:
 
-            case ArrowDown:
-                yPos++;
-                break;
+                    if (yPos - 1 < 0) {
+                        return;
+                    }
 
-            case ArrowLeft:
-                xPos--;
-                break;
+                    if (levelGrid[xPos][yPos - 1] != 1) {
+                        yPos--;
+                    }
+                    break;
+
+                case ArrowRight:
+                    if (xPos + 1 == screenWidth - 1)
+                        return;
+
+                    if (levelGrid[xPos + 1][yPos] != 1) {
+                        xPos++;
+                    }
+                    break;
+
+                case ArrowDown:
+                    if (yPos + 1 == screenHeight - 1)
+                        return;
+
+                    if (levelGrid[xPos][yPos + 1] != 1) {
+                        yPos++;
+                    }
+                    break;
+
+                case ArrowLeft:
+                    if (xPos - 1 < 0)
+                        return;
+
+                    if (levelGrid[xPos - 1][yPos] != 1) {
+                        xPos--;
+                    }
+                    break;
+                default:break;
+            }
         }
+        else {
+            if (String.valueOf(key.getCharacter().charValue()).equals("e")) {
+                cutTree();
+            }
+        }
+
+        drawLevel();
         drawCharacter();
     }
+
+    private void cutTree(){
+
+        if (xPos > 0 && yPos > 0 && xPos < screenWidth - 1 && yPos < screenHeight - 1) {
+
+            if (levelGrid[xPos - 1][yPos] == 1 && levelGrid[xPos + 1][yPos] == 1) {
+                levelGrid[xPos - 1][yPos] = 0;
+            } else if (levelGrid[xPos - 1][yPos] == 1) {
+                levelGrid[xPos - 1][yPos] = 0;
+            } else if (levelGrid[xPos + 1][yPos] == 1) {
+                levelGrid[xPos + 1][yPos] = 0;
+            }
+        }
+    }
+
 }
